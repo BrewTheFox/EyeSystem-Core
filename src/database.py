@@ -35,7 +35,7 @@ class Database():
             """
         user_table = """
         CREATE TABLE IF NOT EXISTS usuarios (
-        usuario VARCHAR(20) NOT NULL, contrasena VARCHAR(61));"""
+        usuario VARCHAR(20) NOT NULL, contrasena VARCHAR(61)), rol INT;"""
 
         # Se ejecutan las consultas y se confirman en la base de datos
         self.cur.execute(student_table)
