@@ -1,4 +1,4 @@
-# Eye_System-Core
+# EyeSystem-Core
 
 ## Trabajo en proceso...
 ### Para hacer.
