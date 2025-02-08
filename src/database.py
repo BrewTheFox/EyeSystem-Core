@@ -2,12 +2,16 @@ import pymysql
 import sqlite3
 import os
 import logging
+import dotenv
+from misc import getCurrentPath
 
 class Database():
     def __init__(self):
-        if os.getenv("localdb").lower() == "true":
+        dotenv.load_dotenv(f"{getCurrentPath()}/.env", override=True)
+        self.localdb = os.getenv("localdb").lower()
+        if self.localdb == "true":
             logging.log(msg="Se usara base de datos local", level=1)
-            self.conn = sqlite3.connect("../database.sql")
+            self.conn = sqlite3.connect(f"{getCurrentPath()}/database.sql")
             self.cur = self.conn.cursor()
         else:
             logging.log(msg="Se usara base de datos remota", level=1)
@@ -42,11 +46,55 @@ class Database():
         self.cur.execute(asistance_table)
         self.cur.execute(user_table)
         self.conn.commit()
-        if not os.getenv("localdb").lower() == "true":
+        if not self.localdb == "true":
             self.disconnect()
-        
+    
+    def _mysqltosqlite(self, query:str) -> str:
+        return query.replace("%s", "?")
+    
+    def commit(self, query:str, arguments:tuple) -> None:
+        if self.localdb == "true":
+            self.cur.execute(self._mysqltosqlite(query), arguments)
+            self.conn.commit()
+            return
+        self.connect()
+        self.cur.execute(query, arguments)
+        self.conn.commit()
+        self.disconnect()
+        return
+
+    def fetchone(self, query:str, arguments:tuple) -> tuple | None:
+        if self.localdb == "true":
+            self.cur.execute(self._mysqltosqlite(query), arguments)
+            return self.cur.fetchone()
+        self.connect()
+        self.cur.execute(query, arguments)
+        data = self.cur.fetchone()
+        self.disconnect()
+        return data
+    
+    def fetchall(self, query:str, arguments:tuple) -> tuple | None:
+        if self.localdb == "true":
+            self.cur.execute(self._mysqltosqlite(query), arguments)
+            return self.cur.fetchall()
+        self.connect()
+        self.cur.execute(query, arguments)
+        data = self.cur.fetchall()
+        self.disconnect()
+        return data
+
+    def fetchmany(self, query:str, arguments:tuple, size:int) -> tuple | None:
+        if self.localdb == "true":
+            self.cur.execute(self._mysqltosqlite(query), arguments)
+            return self.cur.fetchmany(size)
+        self.connect()
+        self.cur.execute(query, arguments)
+        data = self.cur.fetchmany(size)
+        self.disconnect()
+        return data
+    
     def connect(self):
-        if not os.getenv("localdb").lower() == "true":
+        if not self.localdb == "true":
             try:
                 # Se declaran los parametros de conexion en base a las variables de entorno
                 connection_params = {
@@ -65,12 +113,8 @@ class Database():
                 raise ConnectionError("No se pudo conectar a la base de datos remota, porfavor verifica que las credenciales sean validas")
         
     def disconnect(self):
-        if not os.getenv("localdb").lower() == "true":
+        if not self.localdb == "true":
             self.cur.close()
             self.conn.close()
             self.cur = None
             self.conn = None
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    load_dotenv("../.env")
-    db = Database()
