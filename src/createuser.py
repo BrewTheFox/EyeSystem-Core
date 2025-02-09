@@ -3,24 +3,53 @@ from fastapi import File, UploadFile, responses, Form
 from misc import FaceCropper
 from navbars import adminnavbar
 from typing import Annotated
+from dbmanager import adduser
 
 
 @ui.page("/user_training", title="Entrenamiento y recoleccion de datos")
 async def training_page():
     def startSampling(code:str):
-        ui.notify("Toma de fotos comenzada. Porfavor activar camara en caso de ser solicitado", color="green")
-        ui.run_javascript(f'iniciarCaptura("{code}")')
+        if code:
+            ui.notify("Toma de fotos comenzada. Porfavor activar camara en caso de ser solicitado", color="green")
+            ui.run_javascript(f'iniciarCaptura("{code}")')
+        else:
+            ui.notify("No se ha suministrado un codigo", color="red")
+    
+    def add_user(code:str, surnames:str, names:str, grade:str, schooltime:str):
+        if not code or not surnames or not names or not grade or not schooltime:
+            ui.notify("Faltan campos por rellenar en el formulario", color="red")
+            return
+        if len(code) > 11 or len(code) < 3:
+            ui.notify("La longitud del codigo no puede ser mayor que 10, ni menos de 3", color="red")
+            return
+        if len(surnames) > 30 or len(surnames) < 3:
+            ui.notify("Los apellidos no pueden tener mas de 30 letras, ni menos de 3", color="red")
+            return
+        
+        if len(names) > 40 or len(names) < 3:
+            ui.notify("Los nombres no pueden tener mas de 40 letras, ni menos de 3", color="red")
+            return
+        
+        if len(grade) > 5 or len(grade) < 3:
+            ui.notify("Los cursos no pueden tener mas de 4 letras, ni menos de 3", color="red")
+            return
+        
+        if schooltime == "Seleccionar Jornada":
+            ui.notify("Porfavor seleccione una jornada", color="red")
+            return
+        data = adduser(code, surnames, names, grade, schooltime)
+        ui.notify(data["status"], color=data["color"])
 
     adminnavbar()
     with ui.row().style("width:100%; margin-top: 5%;  text-align: center; display: flex; justify-content: center;"):
         with ui.card().style("width:50%;"):
             ui.label("Tomar datos").style("width:100%; font-size: 150%")
-            code = ui.input("Codigo del estudiante").style("width:100%")
-            ui.input("Apellidos del estudiante").style("width:100%")
-            ui.input("Nombres del estudiante").style("width:100%")
-            ui.input("Grupo del estudiante").style("width:100%")
-            ui.select(["Seleccionar Jornada","Mañana", "Tarde"], label="Jornada", value="Seleccionar Jornada").style("width:100%")
-            ui.button("Guardar Datos").style("width:100%")
+            code = ui.input("Codigo del estudiante", validation={'Este campo debe tener al menos 3 caracteres de longitud': lambda value: len(value) >= 3}).style("width:100%")
+            surnames = ui.input("Apellidos del estudiante", validation={'Este campo debe tener al menos 3 caracteres de longitud': lambda value: len(value) >= 3}).style("width:100%")
+            names = ui.input("Nombres del estudiante", validation={'Este campo debe tener al menos 3 caracteres de longitud': lambda value: len(value) >= 3}).style("width:100%")
+            grade = ui.input("Grupo del estudiante", validation={'Este campo debe tener al menos 2 caracteres de longitud': lambda value: len(value) >= 2}).style("width:100%")
+            schooltime = ui.select(["Seleccionar Jornada","Mañana", "Tarde"],validation={'Porfavor seleccione la jornada': lambda value: value != "Seleccionar Jornada"}, label="Jornada", value="Seleccionar Jornada").style("width:100%")
+            ui.button("Guardar Datos", on_click=lambda: add_user(code.value, surnames.value, names.value, grade.value, schooltime.value)).style("width:100%")
             ui.button("Iniciar Captura", on_click=lambda:startSampling(code.value)).style("width:100%")
             ui.html('<h6 id="cantidad">Se han recolectado 0 imagenes de las 200 necesarias</h6>').style("font-size:120%; color:red")
             ui.add_body_html("""<script>async function iniciarCaptura(codigo) {

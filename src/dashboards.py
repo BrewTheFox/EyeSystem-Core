@@ -1,13 +1,14 @@
-from nicegui import ui, app
+from nicegui import ui
 import numpy as np
 from random import randint
+from dbmanager import getuserquantity
 import navbars
 @ui.page("/admin_dashboard", title="Dashboard")
 async def admin_dashboard():
     navbars.adminnavbar()
     with ui.card().style("width:100%"):
         with ui.row().style("justify-content: space-between; width: 100%"):
-            ui.label(f"Estudiantes: {randint(1,100)}").style("font-size:200%")
+            ui.label(f"Estudiantes: {getuserquantity()[0]}").style("font-size:200%")
             ui.label(f"Registros de hoy: {randint(1,100)}").style("font-size:200%;")
 
     with ui.row().style("display: flex; align-items: center; justify-content: center; width:100%"):
@@ -35,7 +36,7 @@ async def user_dashboard():
     navbars.usernavbar()
     with ui.card().style("width:100%"):
         with ui.row().style("justify-content: space-between; width: 100%"):
-            ui.label(f"Estudiantes: {randint(1,100)}").style("font-size:200%")
+            ui.label(f"Estudiantes: {getuserquantity()[0]}").style("font-size:200%")
             ui.label(f"Registros de hoy: {randint(1,100)}").style("font-size:200%;")
 
     with ui.row().style("display: flex; align-items: center; justify-content: center; width:100%"):

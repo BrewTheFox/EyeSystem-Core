@@ -6,3 +6,6 @@ __pycache__
 .nicegui
 data
 meow.*
+models
+testing
+codes

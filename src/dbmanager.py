@@ -23,5 +23,14 @@ def registeruser(username:str, password:str, account_type:int):
     if datos is not None:
         return {"status":"El usuario ya existe", "type":"error", "color":"red"}
     db.commit("INSERT INTO usuarios(usuario, contrasena, rol) VALUES (%s, %s, %s);", (username, hashpassword(password), account_type))
-    return {"status":"Exito al registrar la cuenta!", "type":"error", "color":"green"}
+    return {"status":"Exito al registrar la cuenta!", "type":"success", "color":"green"}
     
+def adduser(code:str, name:str, surname:str, grade:str, schooltime:str):
+    datos = db.fetchone("SELECT nombres From estudiante where codigo_est=%s;", (code,))
+    if datos is not None:
+        return {"status":"El usuario ya existe", "type":"error", "color":"red"}
+    db.commit("INSERT INTO estudiante (codigo_est, apellidos, nombres, grupo, jornada) VALUES (%s, %s, %s, %s, %s)", (code, surname, name, grade, schooltime))
+    return {"status":"Exito al registrar al estudiante!", "type":"success", "color":"green"}
+
+def getuserquantity():
+    return db.fetchone("SELECT COUNT(*) FROM estudiante", ())
