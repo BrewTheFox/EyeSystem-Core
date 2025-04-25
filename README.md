@@ -1,8 +1,7 @@
 # EyeSystem-Core
 
-## Trabajo en proceso...
 ### Para hacer.
-- Interfaz Web ⚠️
+- Interfaz Web ✅
 - Soporte SQLite ✅
 - Dockerfile 🛑
 - Cronjob de entrenamiento 🛑
