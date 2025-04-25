@@ -6,6 +6,7 @@ import os
 import datetime
 import time
 import json
+import dbmanager
 
 def getCurrentPath() -> str:
     currentdir = os.path.split(os.path.abspath(__file__))[0]
@@ -61,11 +62,12 @@ def autotrain():
         codes.write(json.dumps(personandcode))
 
 
-def recognition():
+async def RecognizeFromImg(image:bytes):
     faceclasif = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     os.makedirs(f"{getCurrentPath()}/models/", exist_ok=True)
     os.makedirs(f"{getCurrentPath()}/codes/", exist_ok=True)
     currentmodels = os.listdir(f"{getCurrentPath()}/models/")
+    people = []
     if len(currentmodels) == 0:
         return
     currentmodels.sort()
@@ -74,18 +76,21 @@ def recognition():
         codes = json.loads(file.read())
     facerecon = cv2.face.LBPHFaceRecognizer_create()
     facerecon.read(f"{getCurrentPath()}/models/{lastestmodel}")
-    
-    for image in os.listdir(f'{getCurrentPath()}/testing/'):
-        binimage = cv2.imread(f'{getCurrentPath()}/testing/{image}')
-        image = cv2.cvtColor(binimage, cv2.COLOR_BGR2GRAY)
-        face = faceclasif.detectMultiScale(image, 1.2, 4, minSize=(40, 40))
-        if type(face) == np.ndarray:
-            for (x, y, w, h) in face:
-                image = image[y:y+h, x:x+w]
-                if facerecon.predict(image)[1] < 80:
-                    person = codes[str(facerecon.predict(image)[0])]
-                    person_data = f"{getCurrentPath()}/data/{person}"
-                    cv2.imwrite(f"{person_data}/rostro_{len(os.listdir(person_data))}.jpg", image)
+    image = np.frombuffer(image, np.uint8)
+    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    face = faceclasif.detectMultiScale(image, 1.2, 4, minSize=(40, 40))
+    if type(face) == np.ndarray:
+        for (x, y, w, h) in face:
+            image = image[y:y+h, x:x+w]
+            if facerecon.predict(image)[1] < 80:
+                person = codes[str(facerecon.predict(image)[0])]
+                people.append(person)
+                person_data = f"{getCurrentPath()}/data/{person}"
+                cv2.imwrite(f"{person_data}/rostro_{len(os.listdir(person_data))}.jpg", image)
+                dbmanager.addassistance(person)
+    return {"Se registraron las personas":people}
+
 
 async def FaceCropper(image:bytes, person_code:str):
     faceclasif = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -108,4 +113,3 @@ async def FaceCropper(image:bytes, person_code:str):
         return {"status": "Rostro reconocido", "imagenes_obtenidas":currentImages}
     
     return {"status": "No se pudo reconocer el rostro", "imagenes_obtenidas": currentImages}
-recognition()

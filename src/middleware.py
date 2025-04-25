@@ -21,15 +21,21 @@ class AuthMiddleware(BaseHTTPMiddleware):
         
         if request.url.path in unrestricted_page_routes and bool(app.storage.user.get('role')) == False:
             return await call_next(request)
-        
-        if app.storage.user.get('role'):
-            role = app.storage.user.get('role')
-            if role == 1:
-                if not request.url.path in admin_page_routes:
-                    return RedirectResponse("/admin_dashboard")
-                return await call_next(request)
-            
-            if role == 2:
-                if request.url.path in user_page_routes:
+        try:
+            if app.storage.user.get('role'):
+                role = app.storage.user.get('role')
+                if role == 1:
+                    if not request.url.path in admin_page_routes:
+                        return RedirectResponse("/admin_dashboard")
                     return await call_next(request)
-                return RedirectResponse("/user_dashboard")                
+        except:
+            print("error en 1")
+            print(request.headers)
+            
+            try:
+                if role == 2:
+                    if request.url.path in user_page_routes:
+                        return await call_next(request)
+                    return RedirectResponse("/user_dashboard")
+            except:
+                print("error en 2")

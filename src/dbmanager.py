@@ -1,5 +1,6 @@
 from database import Database
 from misc import *
+from datetime import datetime
 
 db = Database()
 
@@ -33,4 +34,16 @@ def adduser(code:str, name:str, surname:str, grade:str, schooltime:str):
     return {"status":"Exito al registrar al estudiante!", "type":"success", "color":"green"}
 
 def getuserquantity():
-    return db.fetchone("SELECT COUNT(*) FROM estudiante", ())
+    return db.fetchone("SELECT COUNT(*) FROM estudiante", ())[0]
+
+def getassistancequantity():
+    date = datetime.now().strftime('%Y-%m-%d')
+    return db.fetchone("SELECT COUNT(*) FROM asistencia WHERE fecha = %s" , (date))[0]
+
+def addassistance(id:str):
+    date = datetime.now().strftime('%Y-%m-%d')
+    hour = datetime.now().strftime('%H:%M:%S')
+    registro = db.fetchone("SELECT * FROM asistencia WHERE estudiante_id = %s AND fecha = %s", (id, date))
+    if registro is not None:
+        return
+    db.commit("INSERT INTO asistencia (estudiante_id, fecha, hora) VALUES (%s, %s, %s)", (id, date, hour))

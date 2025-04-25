@@ -17,25 +17,24 @@ class Database():
             logging.log(msg="Se usara base de datos remota", level=1)
             self.connect()
         student_table = """
-            CREATE TABLE IF NOT EXISTS estudiante (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            codigo_est VARCHAR(11) NOT NULL,
-            apellidos VARCHAR(30) NOT NULL,
-            nombres VARCHAR(40) NOT NULL,
-            grupo VARCHAR(5) NOT NULL,
-            jornada VARCHAR(7) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
+CREATE TABLE IF NOT EXISTS estudiante (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_est VARCHAR(11) NOT NULL UNIQUE,
+    apellidos VARCHAR(30) NOT NULL,
+    nombres VARCHAR(40) NOT NULL,
+    grupo VARCHAR(5) NOT NULL,
+    jornada VARCHAR(7) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
                 """
         asistance_table = """
-            CREATE TABLE IF NOT EXISTS asistencia (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            estudiante_id INT,
-            nombre VARCHAR(40) NOT NULL,
-            fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
-            estado VARCHAR(20) NOT NULL,
-            FOREIGN KEY (estudiante_id) REFERENCES estudiante(id)
-            );
+CREATE TABLE IF NOT EXISTS asistencia (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    estudiante_id VARCHAR(11),
+    fecha VARCHAR(20) NOT NULL,
+    hora VARCHAR(20) NOT NULL,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(codigo_est)
+);
             """
         user_table = """
         CREATE TABLE IF NOT EXISTS usuarios (

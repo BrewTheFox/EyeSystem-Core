@@ -1,7 +1,7 @@
 from nicegui import ui, app
 import navbars
 from fastapi import File, UploadFile
-from misc import FaceCropper
+from misc import RecognizeFromImg
 
 @ui.page("/recon", title="Reconocimiento Facial")
 def recognition():
@@ -10,9 +10,12 @@ def recognition():
         navbars.adminnavbar()
     if role == 2:
         navbars.usernavbar()
-    ui.label("Implementacion en progreso...")
-    ui.html('<video id="video" autoplay></video>')
-    ui.html('<canvas id="canvas" style="display:none;"></canvas>')
+    ui.html('''<canvas id="canvas" style="display:none;"></canvas>''')
+    ui.add_css('''nosense {width:100%;}
+               video {
+                display: block;
+                margin: 0 auto;
+                }''')
     ui.run_javascript("""
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -20,7 +23,7 @@ def recognition():
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                setInterval(capturarYEnviar, 1000 / 10); // Captura 10 FPS
+                setInterval(capturarYEnviar, 1000 / 5); // Captura 5 FPS
             })
             .catch(error => {
                 console.error("Error al acceder a la webcam:", error);
@@ -41,8 +44,13 @@ def recognition():
                 }).catch(err => console.error("Error enviando frame:", err));
             }, "image/jpeg");
         }""")
+    with ui.card().style("width:100%;"):
+        with ui.row().style("text-align:center; justify-content: center; align-items: center; width:100%"):
+            ui.label("Reconocimiento Facial.").style("font-size:30px;")
+            ui.label("Se estan enviando datos!").style("font-size:30px; color:green;")
+        ui.html('<video id="video" autoplay></video>', tag="nosense")
 
-'''@app.post("/recon_sendimg")
-async def idk(file: UploadFile = File(...)):
-    await FaceCropper(await file.read())
-    return {"message": "Frame recibido", "filename": file.filename}'''
+
+@app.post("/recon_sendimg")
+async def recognizefromweb(file: UploadFile = File(...)):
+    return {"ok":"ok"}
