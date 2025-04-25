@@ -1,2 +1,11 @@
 __pycache__
 *.pyc
+.venv
+.env
+*.sql
+.nicegui
+data
+meow.*
+models
+testing
+codes
