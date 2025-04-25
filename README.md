@@ -1,6 +1,5 @@
 # EyeSystem-Core
 
-## Trabajo en proceso...
 ### Para hacer.
 - Interfaz Web ✅
 - Soporte SQLite ✅
