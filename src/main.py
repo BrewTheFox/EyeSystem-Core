@@ -4,6 +4,7 @@ import dashboards
 import adduser
 import recon
 import createuser
+import asistance
 from dotenv import load_dotenv
 from misc import getCurrentPath
 from middleware import AuthMiddleware

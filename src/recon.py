@@ -2,13 +2,14 @@ from nicegui import ui, app
 import navbars
 from fastapi import File, UploadFile
 from misc import RecognizeFromImg
+import threading
 
 @ui.page("/recon", title="Reconocimiento Facial")
 def recognition():
     role = app.storage.user.get('role')
     if role == 1:
         navbars.adminnavbar()
-    if role == 2:
+    else:
         navbars.usernavbar()
     ui.html('''<canvas id="canvas" style="display:none;"></canvas>''')
     ui.add_css('''nosense {width:100%;}
@@ -23,7 +24,7 @@ def recognition():
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                setInterval(capturarYEnviar, 1000 / 5); // Captura 5 FPS
+                setInterval(capturarYEnviar, 1000 / 15); // Captura 15 FPS
             })
             .catch(error => {
                 console.error("Error al acceder a la webcam:", error);
@@ -53,4 +54,10 @@ def recognition():
 
 @app.post("/recon_sendimg")
 async def recognizefromweb(file: UploadFile = File(...)):
-    return {"ok":"ok"}
+    file = await file.read()
+    if file:
+        hilo = threading.Thread(target=RecognizeFromImg, args=(file,))
+        hilo.start()
+        return {"created":"Recognition Task Created"}
+    else:
+        return {"error":"No file provided"}

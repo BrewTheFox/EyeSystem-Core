@@ -62,34 +62,36 @@ def autotrain():
         codes.write(json.dumps(personandcode))
 
 
-async def RecognizeFromImg(image:bytes):
-    faceclasif = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    os.makedirs(f"{getCurrentPath()}/models/", exist_ok=True)
-    os.makedirs(f"{getCurrentPath()}/codes/", exist_ok=True)
-    currentmodels = os.listdir(f"{getCurrentPath()}/models/")
-    people = []
-    if len(currentmodels) == 0:
-        return
-    currentmodels.sort()
-    lastestmodel = currentmodels[-1]
-    with open(f"{getCurrentPath()}/codes/{lastestmodel.replace(".xml", "")}.codes", "r") as file:
-        codes = json.loads(file.read())
-    facerecon = cv2.face.LBPHFaceRecognizer_create()
-    facerecon.read(f"{getCurrentPath()}/models/{lastestmodel}")
-    image = np.frombuffer(image, np.uint8)
-    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    face = faceclasif.detectMultiScale(image, 1.2, 4, minSize=(40, 40))
-    if type(face) == np.ndarray:
-        for (x, y, w, h) in face:
-            image = image[y:y+h, x:x+w]
-            if facerecon.predict(image)[1] < 80:
-                person = codes[str(facerecon.predict(image)[0])]
-                people.append(person)
-                person_data = f"{getCurrentPath()}/data/{person}"
-                cv2.imwrite(f"{person_data}/rostro_{len(os.listdir(person_data))}.jpg", image)
-                dbmanager.addassistance(person)
-    return {"Se registraron las personas":people}
+def RecognizeFromImg(image:bytes):
+    try:
+        faceclasif = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        os.makedirs(f"{getCurrentPath()}/models/", exist_ok=True)
+        os.makedirs(f"{getCurrentPath()}/codes/", exist_ok=True)
+        currentmodels = os.listdir(f"{getCurrentPath()}/models/")
+        people = []
+        if len(currentmodels) == 0:
+            return
+        currentmodels.sort()
+        lastestmodel = currentmodels[-1]
+        with open(f"{getCurrentPath()}/codes/{lastestmodel.replace(".xml", "")}.codes", "r") as file:
+            codes = json.loads(file.read())
+        facerecon = cv2.face.LBPHFaceRecognizer_create()
+        facerecon.read(f"{getCurrentPath()}/models/{lastestmodel}")
+        image = np.frombuffer(image, np.uint8)
+        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        face = faceclasif.detectMultiScale(image, 1.2, 4, minSize=(40, 40))
+        if type(face) == np.ndarray:
+            for (x, y, w, h) in face:
+                image = image[y:y+h, x:x+w]
+                if facerecon.predict(image)[1] < 80:
+                    person = codes[str(facerecon.predict(image)[0])]
+                    people.append(person)
+                    person_data = f"{getCurrentPath()}/data/{person}"
+                    cv2.imwrite(f"{person_data}/rostro_{len(os.listdir(person_data))}.jpg", image)
+                    dbmanager.addassistance(person)
+    except:
+        return {"Se registraron las personas":people}
 
 
 async def FaceCropper(image:bytes, person_code:str):
