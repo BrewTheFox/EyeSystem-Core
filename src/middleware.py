@@ -4,8 +4,8 @@ from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 unrestricted_page_routes = ["/login"]
-admin_page_routes = ["/admin_dashboard", "/add_user", "/recon", "/recon_sendimg", "/user_training", "/training_sendimg", "/changepassword", "/asistance_list"]
-user_page_routes = ["/user_dashboard", "/recon", "/recon_sendimg", "/changepassword", "/asistance_list"]
+admin_page_routes = ["/dashboard", "/add_user", "/recon", "/recon_sendimg", "/user_training", "/training_sendimg", "/changepassword", "/asistance_list"]
+user_page_routes = ["/dashboard", "/recon", "/recon_sendimg", "/changepassword", "/asistance_list"]
 class AuthMiddleware(BaseHTTPMiddleware):
     """This middleware restricts access to all NiceGUI pages.
 
@@ -25,9 +25,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             role = app.storage.user.get('role')
             if role == 1:
                 if not request.url.path in admin_page_routes:
-                    return RedirectResponse("/admin_dashboard")
+                    return RedirectResponse("/dashboard")
                 return await call_next(request)
             if role == 2:
                 if request.url.path in user_page_routes:
                     return await call_next(request)
-                return RedirectResponse("/user_dashboard")
+                return RedirectResponse("/dashboard")

@@ -4,6 +4,18 @@ from datetime import datetime
 
 db = Database()
 
+def getasistenciacurso(curso:str) -> int:
+    global db
+    date = datetime.now().strftime('%Y-%m-%d')
+    datos = db.fetchone("SELECT COUNT(*) FROM asistencia JOIN estudiante ON asistencia.estudiante_id = estudiante.codigo_est WHERE estudiante.grupo = %s AND asistencia.fecha = %s;", (curso, date))[0]
+    return datos
+
+def getasistenciajornada(jornada:str) -> int:
+    global db
+    date = datetime.now().strftime('%Y-%m-%d')
+    datos = db.fetchone("SELECT COUNT(*) FROM asistencia JOIN estudiante ON asistencia.estudiante_id = estudiante.codigo_est WHERE estudiante.jornada = %s AND asistencia.fecha = %s;", (jornada, date))
+    return datos
+
 def getcursos() -> tuple:
     global db
     datos = db.fetchall("SELECT DISTINCT grupo FROM estudiante", ())

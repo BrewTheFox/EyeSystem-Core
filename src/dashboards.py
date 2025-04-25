@@ -1,64 +1,35 @@
 from nicegui import ui, app
 import numpy as np
 from random import randint
-from dbmanager import getuserquantity, getassistancequantity, changepassword
+from dbmanager import getuserquantity, getassistancequantity, changepassword, getjornadas, getasistenciajornada, getcursos, getasistenciacurso
+from pyecharts.charts import Pie, Bar
 import navbars
 
-@ui.page("/admin_dashboard", title="Dashboard")
-async def admin_dashboard():
-    navbars.adminnavbar()
+@ui.page("/dashboard", title="Dashboard")
+async def dashboard():
+    if app.storage.user["role"] == 1:
+        navbars.adminnavbar()
+    else:
+        navbars.usernavbar()
     with ui.card().style("width:100%"):
         with ui.row().style("justify-content: space-between; width: 100%"):
             ui.label(f"Estudiantes: {getuserquantity()}").style("font-size:200%")
             ui.label(f"Registros de hoy: {getassistancequantity()}").style("font-size:200%;")
 
     with ui.row().style("display: flex; align-items: center; justify-content: center; width:100%"):
-        with ui.matplotlib(figsize=(7, 4)).figure as fig:
-            x = np.linspace(0.0, 5.0)
-            y = np.cos(2 * np.pi * x) * np.exp(-x)
-            ax = fig.gca()
-            ax.plot(x, y, '-')
+        xaxisCursos = []
+        yaxisCursos = []
+        for curso in getcursos():
+            xaxisCursos.append(curso[0])
+            yaxisCursos.append(getasistenciacurso(curso[0]))
 
-        with ui.matplotlib(figsize=(7, 4)).figure as fig:
-            x = np.linspace(0.0, 5.0)
-            y = np.cos(2 * np.pi * x) * np.exp(-x)
-            ax = fig.gca()
-            ax.plot(x, y, '-')
+        ui.echart.from_pyecharts(Bar().add_xaxis(xaxisCursos).add_yaxis("Asistencias", [1])).style("width:40%; height:400%")
+        asistanceDataStudyTime = []
+        for jornada in getjornadas():
+            asistanceDataStudyTime.append([jornada[0], getasistenciajornada(jornada)])
+        ui.echart.from_pyecharts(Pie().add("", asistanceDataStudyTime)).style("width:50%")
+    ui.label("Eye System Version Core por @BrewTheFox").style("color:grey; position:absolute; top:95%")
 
-    with ui.row().style("display: flex; align-items: center; justify-content: center; width:100%"):
-        with ui.matplotlib(figsize=(7, 4)).figure as fig:
-            x = np.linspace(0.0, 5.0)
-            y = np.cos(2 * np.pi * x) * np.exp(-x)
-            ax = fig.gca()
-            ax.plot(x, y, '-')
-
-@ui.page("/user_dashboard", title="Dashboard")
-async def user_dashboard():
-    navbars.usernavbar()
-    with ui.card().style("width:100%"):
-        with ui.row().style("justify-content: space-between; width: 100%"):
-            ui.label(f"Estudiantes: {getuserquantity()}").style("font-size:200%")
-            ui.label(f"Registros de hoy: {getassistancequantity()}").style("font-size:200%;")
-
-    with ui.row().style("display: flex; align-items: center; justify-content: center; width:100%"):
-        with ui.matplotlib(figsize=(7, 4)).figure as fig:
-            x = np.linspace(0.0, 5.0)
-            y = np.cos(2 * np.pi * x) * np.exp(-x)
-            ax = fig.gca()
-            ax.plot(x, y, '-')
-
-        with ui.matplotlib(figsize=(7, 4)).figure as fig:
-            x = np.linspace(0.0, 5.0)
-            y = np.cos(2 * np.pi * x) * np.exp(-x)
-            ax = fig.gca()
-            ax.plot(x, y, '-')
-
-    with ui.row().style("display: flex; align-items: center; justify-content: center; width:100%"):
-        with ui.matplotlib(figsize=(7, 4)).figure as fig:
-            x = np.linspace(0.0, 5.0)
-            y = np.cos(2 * np.pi * x) * np.exp(-x)
-            ax = fig.gca()
-            ax.plot(x, y, '-')
 
 @ui.page("/changepassword", title="Cambiar Contraseña")
 async def changeform():
