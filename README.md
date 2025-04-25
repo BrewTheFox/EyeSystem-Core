@@ -2,8 +2,8 @@
 
 ## Trabajo en proceso...
 ### Para hacer.
-- Interfaz Web
+- Interfaz Web ⚠️
 - Soporte SQLite ✅
-- Dockerfile
-- Cronjob de entrenamiento
-- Ampliar datasets de entrenamiento en base a el reconocimiento actual
+- Dockerfile 🛑
+- Cronjob de entrenamiento 🛑
+- Ampliar datasets de entrenamiento en base a el reconocimiento actual ✅
